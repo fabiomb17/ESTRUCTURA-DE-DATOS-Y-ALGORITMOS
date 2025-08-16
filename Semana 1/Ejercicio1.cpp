@@ -1,26 +1,28 @@
 /*  ESTRUCTURA DE DATOS Y ALGORITMOS
+
     Grupo 12 compuesto por:
 
     FABIO MUÑOZ – 100069637
     MELODY MORILLO – 100067738
     EDISON MERCEDES – 100069673
     YERNISON NÚÑEZ – 100063221
-    DAURY JOSE OGANDO – 100070480 */
+    DAURY JOSE OGANDO – 100070480 
     
-/* Ejercicio 1 - Almacén Central de Componentes Electrónicos 
+    Ejercicio 1 - Almacén Central de Componentes Electrónicos 
 
-Una empresa de ensamblaje de equipos computacionales gestiona un almacén donde guarda distintos componentes electrónicos (procesadores, memorias, discos, otros). 
-De cada componente se conoce el código, nombre, precio de costo y la cantidad en existencia. 
-Los productos nacionales tienen como atributo adicional la empresa productora, y los importados el país de procedencia y precio de compra en divisas. 
+    Una empresa de ensamblaje de equipos computacionales gestiona un almacén donde guarda distintos componentes electrónicos (procesadores, memorias, discos, otros). 
+    De cada componente se conoce el código, nombre, precio de costo y la cantidad en existencia. 
+    Los productos nacionales tienen como atributo adicional la empresa productora, y los importados el país de procedencia y precio de compra en divisas. 
 
-a)	El sistema debe calcular el precio de venta: 
-    •	Nacionales: precio de costo + 5%. 
-    •	Importados: precio de costo + 5% + (27 × precio en USD). 
-b)	Registrar nuevos componentes. 
-c)	Modificar productos existentes. 
-d)	Mostrar un listado de productos nacionales con precio superior a un valor dado. 
-e)	Listar productos extranjeros por país de procedencia. 
-f)	Detectar productos con stock por debajo de su nivel mínimo. */
+    a)	El sistema debe calcular el precio de venta: 
+        •	Nacionales: precio de costo + 5%. 
+        •	Importados: precio de costo + 5% + (27 × precio en USD). 
+    b)	Registrar nuevos componentes. 
+    c)	Modificar productos existentes. 
+    d)	Mostrar un listado de productos nacionales con precio superior a un valor dado. 
+    e)	Listar productos extranjeros por país de procedencia. 
+    f)	Detectar productos con stock por debajo de su nivel mínimo. 
+*/
 
 #include <stdio.h>
 #include <string.h>
