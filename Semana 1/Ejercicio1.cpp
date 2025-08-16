@@ -24,223 +24,303 @@
     f)	Detectar productos con stock por debajo de su nivel mínimo. 
 */
 
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include <algorithm>
-using namespace std;
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-const int NUM_EVALUACIONES = 5;
-const int NOTA_APROBACION = 70;
+// Constantes para el programa
+#define MAX_COMPONENTES 100
+#define MAX_LONGITUD 50
 
-class Estudiante {
-private:
-    string nombre;
-    string matricula;
-    float calificaciones[NUM_EVALUACIONES];
-    float promedio;
-    bool aprobado;
+// Variables globales para los arreglos unidimensionales
+int codigos[MAX_COMPONENTES];
+char nombres[MAX_COMPONENTES][MAX_LONGITUD];
+float precios_costo[MAX_COMPONENTES];
+int cantidades_existencia[MAX_COMPONENTES];
+int tipos[MAX_COMPONENTES]; // 1 para nacional, 0 para importado
+char empresas_paises[MAX_COMPONENTES][MAX_LONGITUD];
+float precios_usd[MAX_COMPONENTES];
 
-public:
-    // Constructor
-    Estudiante() : promedio(0), aprobado(false) {}
-
-    void setNombre(string n) { nombre = n; }
-    void setMatricula(string m) { matricula = m; }
-    void setCalificacion(int index, float calif) { 
-        calificaciones[index] = calif; 
-    }
-
-    void calcularPromedio() {
-        float suma = 0;
-        for (int i = 0; i < NUM_EVALUACIONES; i++) {
-            suma += calificaciones[i];
-        }
-        promedio = suma / NUM_EVALUACIONES;
-        aprobado = (promedio >= NOTA_APROBACION);
-    }
-
-    string getNombre() const { return nombre; }
-    string getMatricula() const { return matricula; }
-    float getPromedio() const { return promedio; }
-    bool estaAprobado() const { return aprobado; }
-    float getCalificacion(int index) const { return calificaciones[index]; }
-
-    // Método para mostrar información
-    void mostrarInfo() const {
-        cout << left << setw(15) << matricula 
-             << setw(25) << nombre 
-             << fixed << setprecision(2) << setw(10) << promedio 
-             << (aprobado ? "Aprobado" : "Reprobado") << endl;
-    }
-};
+int num_componentes = 0; // Contador de componentes registrados
 
 // Prototipos de funciones
-void mostrarMenu();
-void registrarEstudiante(Estudiante estudiantes[], int &contador);
-void calcularPromedios(Estudiante estudiantes[], int contador);
-void mostrarAprobados(const Estudiante estudiantes[], int contador);
-void ordenarPorPromedio(Estudiante estudiantes[], int contador);
-void mostrarTodos(const Estudiante estudiantes[], int contador);
-bool compararPromedios(const Estudiante &a, const Estudiante &b);
+void menu_principal();
+void registrar_componente();
+void modificar_componente();
+void calcular_precio_venta();
+void listar_nacionales_precio_superior();
+void listar_importados_por_pais();
+void detectar_stock_bajo();
 
 int main() {
-    const int MAX_ESTUDIANTES = 50;
-    Estudiante estudiantes[MAX_ESTUDIANTES];
-    int contadorEstudiantes = 0;
-
-    cout << "Sistema de Registro de Calificaciones Grupo 12\n";
-    cout << "=================================================\n\n";
-
-    int opcion;
-    do {
-        mostrarMenu();
-        cout << "Seleccione una opcion: ";
-        cin >> opcion;
-
-        switch(opcion) {
-            case 1:
-                registrarEstudiante(estudiantes, contadorEstudiantes);
-                break;
-            case 2:
-                calcularPromedios(estudiantes, contadorEstudiantes);
-                break;
-            case 3:
-                mostrarAprobados(estudiantes, contadorEstudiantes);
-                break;
-            case 4:
-                ordenarPorPromedio(estudiantes, contadorEstudiantes);
-                break;
-            case 5:
-                mostrarTodos(estudiantes, contadorEstudiantes);
-                break;
-            case 0:
-                cout << "Saliendo del sistema...\n";
-                break;
-            default:
-                cout << "Opcion no valida. Intente nuevamente.\n";
-        }
-    } while(opcion != 0);
-
+    printf("Sistema de Gestion de Almacen Grupo 12\n");
+    printf("=======================================\n\n");
+    
+    menu_principal();
+    
     return 0;
 }
 
-void mostrarMenu() {
-    cout << "\nMenu Principal:\n";
-    cout << "1. Registrar nuevo estudiante\n";
-    cout << "2. Calcular promedios\n";
-    cout << "3. Mostrar estudiantes aprobados\n";
-    cout << "4. Ordenar estudiantes por promedio\n";
-    cout << "5. Mostrar todos los estudiantes\n";
-    cout << "0. Salir\n";
-}
-
-void registrarEstudiante(Estudiante estudiantes[], int &contador) {
-    const int MAX_ESTUDIANTES = 50;
-    if (contador >= MAX_ESTUDIANTES) {
-        cout << "Capacidad maxima alcanzada. No se pueden registrar mas estudiantes.\n";
-        return;
-    }
-
-    cout << "\nRegistro de nuevo estudiante #" << contador + 1 << endl;
-
-    string nombre, matricula;
-    float calif;
-
-    cout << "Nombre: ";
-    cin.ignore();
-    getline(cin, nombre);
-    estudiantes[contador].setNombre(nombre);
-
-    cout << "Matricula: ";
-    getline(cin, matricula);
-    estudiantes[contador].setMatricula(matricula);
-
-    cout << "Ingrese las 5 calificaciones:\n";
-    for (int i = 0; i < NUM_EVALUACIONES; i++) {
-        cout << "Evaluacion " << i+1 << ": ";
-        cin >> calif;
+// Funcion para mostrar el menu principal
+void menu_principal() {
+    int opcion;
+    
+    do {
+        printf("\nMenu Principal:\n");
+        printf("1. Registrar nuevo producto\n");
+        printf("2. Modificar producto existente\n");
+        printf("3. Calcular precio de venta\n");
+        printf("4. Listar productos nacionales\n");
+        printf("5. Listar productos importados por pais\n");
+        printf("6. Productos con bajo stock \n");
+        printf("0. Salir\n");
+        printf("Seleccione una opcion: ");
+        scanf("%d", &opcion);
         
-        while (calif < 0 || calif > 100) {
-            cout << "Calificacion no valida. Debe ser entre 0 y 100. Intente nuevamente: ";
-            cin >> calif;
+        switch(opcion) {
+            case 1:
+                registrar_componente();
+                break;
+            case 2:
+                modificar_componente();
+                break;
+            case 3:
+                calcular_precio_venta();
+                break;
+            case 4:
+                listar_nacionales_precio_superior();
+                break;
+            case 5:
+                listar_importados_por_pais();
+                break;
+            case 6:
+                detectar_stock_bajo();
+                break;
+            case 0:
+                printf("Saliendo del sistema...\n");
+                break;
+            default:
+                printf("Opcion no valida. Intente nuevamente.\n");
         }
-        estudiantes[contador].setCalificacion(i, calif);
-    }
-
-    contador++;
-    cout << "Estudiante registrado exitosamente!\n";
+    } while(opcion != 0);
 }
 
-void calcularPromedios(Estudiante estudiantes[], int contador) {
-    if (contador == 0) {
-        cout << "No hay estudiantes registrados para calcular promedios.\n";
+void registrar_componente() {
+    if (num_componentes >= MAX_COMPONENTES) {
+        printf("El inventario esta lleno. No se pueden agregar mas componentes.\n");
         return;
     }
-
-    for (int i = 0; i < contador; i++) {
-        estudiantes[i].calcularPromedio();
-    }
-
-    cout << "Promedios calculados exitosamente!\n";
-}
-
-void mostrarAprobados(const Estudiante estudiantes[], int contador) {
-    if (contador == 0) {
-        cout << "No hay estudiantes registrados.\n";
-        return;
-    }
-
-    cout << "\nEstudiantes Aprobados (Promedio >= " << NOTA_APROBACION << ")\n";
-    cout << "========================================\n";
-    cout << left << setw(15) << "Matricula" << setw(25) << "Nombre" << "Promedio\n";
-    cout << "----------------------------------------\n";
-
-    int aprobados = 0;
-    for (int i = 0; i < contador; i++) {
-        if (estudiantes[i].estaAprobado()) {
-            cout << left << setw(15) << estudiantes[i].getMatricula() 
-                 << setw(25) << estudiantes[i].getNombre() 
-                 << fixed << setprecision(2) << estudiantes[i].getPromedio() << endl;
-            aprobados++;
-        }
-    }
-
-    if (aprobados == 0) {
-        cout << "No hay estudiantes aprobados.\n";
+    
+    printf("\nRegistro de nuevo componente:\n");
+    
+    printf("Codigo: ");
+    scanf("%d", &codigos[num_componentes]);
+    
+    printf("Nombre: ");
+    scanf(" %[^\n]", nombres[num_componentes]);
+    
+    printf("Precio de costo: ");
+    scanf("%f", &precios_costo[num_componentes]);
+    
+    printf("Cantidad en existencia: ");
+    scanf("%d", &cantidades_existencia[num_componentes]);
+    
+    printf("Es nacional (1) o importado (0)? ");
+    scanf("%d", &tipos[num_componentes]);
+    
+    if (tipos[num_componentes]) {
+        printf("Empresa productora: ");
+        scanf(" %[^\n]", empresas_paises[num_componentes]);
+        precios_usd[num_componentes] = 0.0;
     } else {
-        cout << "Total aprobados: " << aprobados << endl;
+        printf("Pais de procedencia: ");
+        scanf(" %[^\n]", empresas_paises[num_componentes]);
+        
+        printf("Precio en dolares: ");
+        scanf("%f", &precios_usd[num_componentes]);
     }
+    
+    num_componentes++;
+    printf("Componente registrado exitosamente!\n");
 }
 
-bool compararPromedios(const Estudiante &a, const Estudiante &b) {
-    return a.getPromedio() > b.getPromedio(); // Orden descendente
-}
-
-void ordenarPorPromedio(Estudiante estudiantes[], int contador) {
-    if (contador == 0) {
-        cout << "No hay estudiantes registrados para ordenar.\n";
+void modificar_componente() {
+    if (num_componentes == 0) {
+        printf("No hay componentes registrados para modificar.\n");
         return;
     }
-
-    sort(estudiantes, estudiantes + contador, compararPromedios);
-    cout << "Estudiantes ordenados por promedio (de mayor a menor) exitosamente!\n";
-    mostrarTodos(estudiantes, contador);
-}
-
-void mostrarTodos(const Estudiante estudiantes[], int contador) {
-    if (contador == 0) {
-        cout << "No hay estudiantes registrados.\n";
+    
+    int codigo, encontrado = 0, indice;
+    
+    printf("\nIngrese el codigo del componente a modificar: ");
+    scanf("%d", &codigo);
+    
+    // Buscar el componente por su código
+    for (int i = 0; i < num_componentes; i++) {
+        if (codigos[i] == codigo) {
+            encontrado = 1;
+            indice = i;
+            break;
+        }
+    }
+    
+    if (!encontrado) {
+        printf("No se encontro un componente con ese codigo.\n");
         return;
     }
+    
+    printf("\nModificando componente %d: %s\n", codigos[indice], nombres[indice]);
+    
+    printf("Nuevo nombre (actual: %s): ", nombres[indice]);
+    scanf(" %[^\n]", nombres[indice]);
+    
+    printf("Nuevo precio de costo (actual: %.2f): ", precios_costo[indice]);
+    scanf("%f", &precios_costo[indice]);
+    
+    printf("Nueva cantidad en existencia (actual: %d): ", cantidades_existencia[indice]);
+    scanf("%d", &cantidades_existencia[indice]);
+    
+    if (tipos[indice]) {
+        printf("Nueva empresa productora (actual: %s): ", empresas_paises[indice]);
+        scanf(" %[^\n]", empresas_paises[indice]);
+    } else {
+        printf("Nuevo pais de procedencia (actual: %s): ", empresas_paises[indice]);
+        scanf(" %[^\n]", empresas_paises[indice]);
+        
+        printf("Nuevo precio en dolares (actual: %.2f): ", precios_usd[indice]);
+        scanf("%f", &precios_usd[indice]);
+    }
+    
+    printf("Componente modificado exitosamente!\n");
+}
 
-    cout << "\nListado Completo de Estudiantes\n";
-    cout << "====================================================================\n";
-    cout << left << setw(15) << "Matricula" << setw(25) << "Nombre" 
-         << setw(10) << "Promedio" << "Estado\n";
-    cout << "--------------------------------------------------------------------\n";
+void calcular_precio_venta() {
+    if (num_componentes == 0) {
+        printf("No hay componentes registrados para calcular precios.\n");
+        return;
+    }
+    
+    printf("\nCalculo de precios de venta:\n");
+    printf("============================\n");
+    
+    for (int i = 0; i < num_componentes; i++) {
+        float precio_venta;
+        
+        if (tipos[i]) {
+            precio_venta = precios_costo[i] * 1.05;
+            printf("Componente nacional: %s\n", nombres[i]);
+            printf("Empresa: %s\n", empresas_paises[i]);
+        } else {
+            precio_venta = precios_costo[i] * 1.05 + (27 * precios_usd[i]);
+            printf("Componente importado: %s\n", nombres[i]);
+            printf("Pais: %s\n", empresas_paises[i]);
+        }
+        
+        printf("Precio de costo: %.2f\n", precios_costo[i]);
+        printf("Precio de venta: %.2f\n\n", precio_venta);
+    }
+}
 
-    for (int i = 0; i < contador; i++) {
-        estudiantes[i].mostrarInfo();
+void listar_nacionales_precio_superior() {
+    if (num_componentes == 0) {
+        printf("No hay componentes registrados para listar.\n");
+        return;
+    }
+    
+    float precio_minimo;
+    int encontrados = 0;
+    
+    printf("\nIngrese el precio minimo para filtrar: ");
+    scanf("%f", &precio_minimo);
+    
+    printf("\nProductos nacionales con precio superior a %.2f:\n", precio_minimo);
+    printf("===============================================\n");
+    
+    for (int i = 0; i < num_componentes; i++) {
+        if (tipos[i] && precios_costo[i] > precio_minimo) {
+            printf("Codigo: %d\n", codigos[i]);
+            printf("Nombre: %s\n", nombres[i]);
+            printf("Precio: %.2f\n", precios_costo[i]);
+            printf("Empresa: %s\n", empresas_paises[i]);
+            printf("Cantidad: %d\n\n", cantidades_existencia[i]);
+            encontrados++;
+        }
+    }
+    
+    if (encontrados == 0) {
+        printf("No se encontraron productos nacionales con precio superior a %.2f\n", precio_minimo);
+    } else {
+        printf("Total encontrados: %d\n", encontrados);
+    }
+}
+
+void listar_importados_por_pais() {
+    if (num_componentes == 0) {
+        printf("No hay componentes registrados para listar.\n");
+        return;
+    }
+    
+    char pais[MAX_LONGITUD];
+    int encontrados = 0;
+    
+    printf("\nIngrese el pais de procedencia para filtrar: ");
+    scanf(" %[^\n]", pais);
+    
+    printf("\nProductos importados de %s:\n", pais);
+    printf("==============================\n");
+    
+    for (int i = 0; i < num_componentes; i++) {
+        if (!tipos[i] && strcmp(empresas_paises[i], pais) == 0) {
+            printf("Codigo: %d\n", codigos[i]);
+            printf("Nombre: %s\n", nombres[i]);
+            printf("Precio: %.2f\n", precios_costo[i]);
+            printf("Precio en USD: %.2f\n", precios_usd[i]);
+            printf("Cantidad: %d\n\n", cantidades_existencia[i]);
+            encontrados++;
+        }
+    }
+    
+    if (encontrados == 0) {
+        printf("No se encontraron productos importados de %s\n", pais);
+    } else {
+        printf("Total encontrados: %d\n", encontrados);
+    }
+}
+
+void detectar_stock_bajo() {
+    if (num_componentes == 0) {
+        printf("No hay componentes registrados para verificar.\n");
+        return;
+    }
+    
+    int nivel_minimo, encontrados = 0;
+    
+    printf("\nIngrese el nivel minimo de stock para la alerta: ");
+    scanf("%d", &nivel_minimo);
+    
+    printf("\nProductos con stock por debajo de %d:\n", nivel_minimo);
+    printf("======================================\n");
+    
+    for (int i = 0; i < num_componentes; i++) {
+        if (cantidades_existencia[i] < nivel_minimo) {
+            printf("Codigo: %d\n", codigos[i]);
+            printf("Nombre: %s\n", nombres[i]);
+            printf("Tipo: %s\n", tipos[i] ? "Nacional" : "Importado");
+            printf("Cantidad actual: %d\n", cantidades_existencia[i]);
+            
+            if (tipos[i]) {
+                printf("Empresa: %s\n\n", empresas_paises[i]);
+            } else {
+                printf("Pais: %s\n\n", empresas_paises[i]);
+            }
+            
+            encontrados++;
+        }
+    }
+    
+    if (encontrados == 0) {
+        printf("No hay productos con stock por debajo de %d\n", nivel_minimo);
+    } else {
+        printf("Total de productos con stock bajo: %d\n", encontrados);
     }
 }
