@@ -21,7 +21,7 @@
     - Implementar usando un arreglo unidimensional de objetos Estudiante.
  */
 
- #include <iostream>
+#include <iostream>
 #include <string>
 #include <iomanip>
 #include <algorithm>
